@@ -20,3 +20,11 @@ As a bonus I did performance test of few priority queues https://github.com/lemi
 Please start reading from index.js and follow along my comments for more detils.
 
 I had a lot of fun!
+
+>Consider what would happen when you're asked to merge 1K log sources, or even 1M log sources.  Where might your bottlenecks arise?
+
+For 1M sync log sources bottleneck would be CPU time for, but the complexity of my solution is O(k*log(n)) which is as fast as it gets. It could be improved to be 3-4x faster, but that's it. It can scale horizontally! Nothing prevents us from partitioning 1M log sources into multiple nodes and then merging results of their merge.
+
+For 1M async log sources bottleneck is async itself, the speed with which sources arrive. Current approach is sequential, it waits for every item to arrive and then moves to the next one, this can be improved with some buffering. I don't know the exact strategy, but it can be figured out with trial and error, for instance we can have a separate "async virtual process" that buffers log sources in parallel to significantly speed up their arrival. That has to be throttled so it doesn't overflow memory and efficiency of which depends on log times dispersion across the sources. If logs are close to each other and we do a lot of switching in between sources then buffering "few from each" strategy is best, if logs times are not dispersed much and we won't switch often then buffering "current source more and others less" would work better.
+
+Observables could help with making above buffering strategies very straightforward. 
