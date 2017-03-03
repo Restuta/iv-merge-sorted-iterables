@@ -1,79 +1,25 @@
 'use strict'
-
 var co = require('co')
 const Rx = require('rxjs/Rx')
-const mergeSortedSequences = require('../lib/merger/merge-sorted-sequences')
+const mergeSortedSequencesAsync = require('../lib/merger/merge-sorted-sequences-async')
 
-var fn = co.wrap(function* (val) {
-  return yield Promise.resolve(val);
-});
-
-
-const promiseIterableToIterable =
-//co.wrap(
-  function* (promiseIterable) {
-    console.info('inside promise iterable')
-
-    for(let promise of promiseIterable) {
-      console.info('iterating over pomises')
-      console.info(promise)
-      yield promise
-    }
-  }
-//)
-
-
-function* createIterableSource(logSource) {
+//creates infinite iterable of promises
+function* createIterableFromAsyncLogSource(logSource) {
   while(true) {
     yield logSource.popAsync()
   }
-  // for(let i = 0; i < logSource.length; i += 1) {
-  //   yield logSource[i].popAsync()
-  // }
 }
 
 
 module.exports = (logSources, printer) => {
+  const iterableLogSources = logSources.map(x => createIterableFromAsyncLogSource(x))
+  const comparator = (a, b) => new Date(a.date) < new Date(b.date)
 
-  // const iterableLogSource1 = createIterableSource(logSources[0])
-  // const iterableLogSource2 = createIterableSource(logSources[0])
-
-
-  const observable = Rx.Observable.create(observer => {
-    mergeSortedSequences(
-      logSources.map(x => createIterableSource(x)),
-      (a, b) => new Date(a.date) < new Date(b.date),
-      observer
-    )
-    .then(() => console.info('all done'))
-  })
+  const observable = mergeSortedSequencesAsync(iterableLogSources, comparator)
 
   observable.subscribe(
     logItem =>  printer.print(logItem),
     e => console.error(e),
-    () => console.log('completed!')
+    () => printer.done()
   )
-
-  // console.info(observable)
-
-  // const iterable = promiseIterableToIterable(iterableLogSource)
-  //   .then(x => console.info(x))
-
-  // console.info(iterable.next())
-
-  // for (let item of iterable) {
-  //   console.info(item)
-  // }
-
-  // const merged = mergeSortedSequences(
-  //   logSources.map(x => createIterableSource(x)),
-  //   (a, b) => new Date(a.date) < new Date(b.date)
-  // )
-  //
-  // for(let logItem of merged) {
-  //   console.info(logItem)
-  //   printer.print(logItem)
-  // }
-
-	// throw new Error('Not implemented yet!  That part is up to you!')
 }
