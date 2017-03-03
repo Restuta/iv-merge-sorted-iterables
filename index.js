@@ -8,9 +8,9 @@ const sourceCount = 100
 
 /**
  * Challenge Number 1!
- * 
+ *
  * Assume that a LogSource only has one method: pop() which will return a LogEntry.
- * 
+ *
  * A LogEntry is simply an object of the form:
  * {
  * 		date: Date,
@@ -19,7 +19,7 @@ const sourceCount = 100
  *
  * All LogEntries from a given LogSource are guaranteed to be popped in chronological order.
  * Eventually a LogSource will end and return boolean false.
- * 
+ *
  * Your job is simple: print the sorted merge of all LogEntries across `n` LogSources.
  *
  * Call `printer.print(logEntry)` to print each entry of the merged output as they are ready.
@@ -45,4 +45,5 @@ const asyncLogSources = []
 for (let i = 0; i < sourceCount; i++) {
 	asyncLogSources.push(new LogSource())
 }
-require('./solution/async-sorted-merge')(asyncLogSources, new Printer())
+
+// require('./solution/async-sorted-merge')(asyncLogSources, new Printer())
